@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MathWizard</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#24124d;--sun:#ffc233;--coral:#ff5d73;--leaf:#1fa65a}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:'Baloo 2',system-ui,sans-serif;color:var(--ink);background:linear-gradient(160deg,#fff3c4,#ffd6e0);transition:background .6s}
+body.w1{background:linear-gradient(160deg,#c9f5d3,#7fd6a0)}
+body.w2{background:linear-gradient(160deg,#bfe6ff,#6ab7f5)}
+body.w3{background:linear-gradient(160deg,#a98bff,#4a2aa8)}
+main{max-width:640px;margin:auto;padding:16px}
+h1{font-size:2.4rem;margin:.1em 0;text-align:center}
+.card{background:#fff;border-radius:24px;padding:18px;box-shadow:0 6px 0 rgba(36,18,77,.15);margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:10px}
+button{font:inherit;font-weight:800;font-size:1.1rem;border:0;border-radius:18px;padding:12px;background:var(--sun);color:var(--ink);box-shadow:0 5px 0 rgba(36,18,77,.25);cursor:pointer}
+button:active{transform:translateY(4px);box-shadow:0 1px 0}
+button:focus-visible{outline:4px solid var(--ink)}
+button small{font-weight:500}
+.big{font-size:2rem;text-align:center;margin:8px 0;font-weight:800}
+.bar{height:14px;background:#fff8;border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--coral);transition:width .4s}
+.ok{background:var(--leaf)!important;color:#fff}
+.no{background:var(--coral)!important;color:#fff;animation:shake .4s}
+.mascot{font-size:4rem;text-align:center;animation:bob 2s ease-in-out infinite}
+.conf{position:fixed;top:-2rem;font-size:1.8rem;animation:fall 1.6s linear forwards;pointer-events:none}
+table{width:100%;border-collapse:collapse}td,th{padding:6px;text-align:left;border-bottom:1px solid #eee}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes bob{50%{transform:translateY(-10px)}}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head><body><main id="app"></main>
+<script>
+const API="https://script.google.com/macros/s/AKfycbxUuSSROX6eu3iSKJqEQRRZEb0ayYqO6j244XgWkET7uOec4phdC2Y1VbdNKmC4Fg1t/exec"; // Web app URL from Apps Script deployment
+const NAMES=["Brave Falcon","Swift Dolphin","Cosmic Fox","Jungle Jaguar","Captain Comet","Coral Knight","Star Ranger","Mighty Panda","Rocket Otter","Treasure Tiger","Sea Wizard","Lunar Lion"];
+const LV=["🌱 Easy","⚡ Average","🔥 Difficult"];
+const $=s=>document.querySelector(s),app=$('#app'),rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+let me=localStorage.getItem('mw_me')||'',W=0,L=0,Q=[],i=0,sc=0,st=0,mute=false,ac;
+
+/* sounds + confetti */
+function tone(f,d=.15,t=0){if(mute)return;try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime+t;o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(.2,n);g.gain.exponentialRampToValueAtTime(.001,n+d);o.connect(g);g.connect(ac.destination);o.start(n);o.stop(n+d)}catch(e){}}
+function confetti(){for(let k=0;k<22;k++){const s=document.createElement('span');s.className='conf';s.textContent=['⭐','🎉','✨','🪙'][rnd(0,3)];s.style.left=rnd(0,95)+'vw';s.style.animationDelay=Math.random()*.4+'s';document.body.append(s);setTimeout(()=>s.remove(),2200)}}
+const yay=()=>{[523,659,784].forEach((f,k)=>tone(f,.15,k*.1));confetti()};
+
+/* question helpers */
+const shuf=a=>a.sort(()=>Math.random()-.5);
+function num(v,scale=1){const dp=String(scale).length-1,f=x=>(x/scale).toFixed(dp),c=[1,-1,10,-10,2,-2,100].map(s=>v+s).filter(x=>x>0&&x!=v);return{a:f(v),o:shuf([f(v),...shuf(c).slice(0,3).map(f)])}}
+function frac(n,d){const g=gcd(n,d);n/=g;d/=g;return d==1?""+n:n>d?Math.floor(n/d)+" "+n%d+"/"+d:n+"/"+d}
+function fr(n,d){const g=gcd(n,d);n/=g;d/=g;const a=frac(n,d),c=[[n+1,d],[n-1,d],[n,d+1],[n,d-1],[d,n],[n+2,d]].filter(x=>x[0]>0&&x[1]>0).map(x=>frac(...x)).filter((x,k,r)=>x!=a&&r.indexOf(x)==k);return{a,o:shuf([a,...shuf(c).slice(0,3)])}}
+
+/* worlds */
+function jungle(l){const r=[[1,50],[100,999],[1000,9999]][l],p=rnd(0,3);let a,b;
+ if(p==0){a=rnd(...r);b=rnd(...r);return{q:`${a} + ${b}`,...num(a+b)}}
+ if(p==1){a=rnd(...r);b=rnd(...r);if(a<b)[a,b]=[b,a];return{q:`${a} − ${b}`,...num(a-b)}}
+ if(p==2){const m=[[2,9,2,9],[12,99,2,9],[12,99,11,49]][l];a=rnd(m[0],m[1]);b=rnd(m[2],m[3]);return{q:`${a} × ${b}`,...num(a*b)}}
+ b=rnd(2,[9,9,12][l]);const v=rnd([2,12,25][l],[12,99,99][l]);return{q:`${b*v} ÷ ${b}`,...num(v)}}
+function sea(l){let a,b,c,d;
+ if(l==0){d=rnd(3,12);a=rnd(2,d-1);c=rnd(1,a-1);const add=Math.random()<.5;if(add){a=rnd(1,d-2);c=rnd(1,d-1-a)}return{q:`${a}/${d} ${add?'+':'−'} ${c}/${d}`,...fr(add?a+c:a-c,d)}}
+ if(l==1){const [x,y]=[[2,4],[3,6],[2,6],[4,8],[3,9],[5,10]][rnd(0,5)];a=rnd(1,x-1);c=rnd(1,y-1);return{q:`${a}/${x} + ${c}/${y}`,...fr(a*y+c*x,x*y)}}
+ if(Math.random()<.5){d=rnd(2,6);const n=rnd(1,d-1),w=d*rnd(2,9);return{q:`${n}/${d} of ${w}`,...num(n*w/d)}}
+ a=rnd(1,4);b=rnd(a+1,6);c=rnd(1,4);d=rnd(c+1,6);return{q:`${a}/${b} × ${c}/${d}`,...fr(a*c,b*d)}}
+function space(l){const p=Math.random()<.5;let a,b;
+ if(l==0){a=rnd(10,99);b=rnd(10,99);if(!p&&a<b)[a,b]=[b,a];return{q:`${(a/10).toFixed(1)} ${p?'+':'−'} ${(b/10).toFixed(1)}`,...num(p?a+b:a-b,10)}}
+ if(l==1){a=rnd(100,999);b=rnd(100,999);if(!p&&a<b)[a,b]=[b,a];return{q:`${(a/100).toFixed(2)} ${p?'+':'−'} ${(b/100).toFixed(2)}`,...num(p?a+b:a-b,100)}}
+ if(p){a=rnd(12,99);b=rnd(2,9);return{q:`${(a/10).toFixed(1)} × ${b}`,...num(a*b,10)}}
+ a=rnd(12,59);b=rnd(2,9);return{q:`${(a/10).toFixed(1)} × ${(b/10).toFixed(1)}`,...num(a*b,100)}}
+const WORLDS=[{n:'Jungle trail',e:'🌴',t:'Add, subtract, multiply, divide',g:jungle},{n:'Ocean voyage',e:'🌊',t:'Fractions',g:sea},{n:'Space mission',e:'🚀',t:'Decimals',g:space}];
+
+/* screens */
+function home(){document.body.className='';app.innerHTML=`<div class="mascot">🧙‍♂️</div><h1>MathWizard</h1><div class="card"><div class="big">Pick your adventure codename</div><div class="grid">${NAMES.map(n=>`<button onclick="pick('${n}')">${n}</button>`).join('')}</div></div>`}
+function pick(n){me=n;localStorage.setItem('mw_me',n);tone(660);map()}
+function map(){document.body.className='';app.innerHTML=`<div class="mascot">🧭</div><h1>Welcome, ${me}!</h1>
+<div class="card"><b>Choose your level</b><div class="grid">${LV.map((l,k)=>`<button class="${k==L?'ok':''}" onclick="L=${k};tone(500);map()">${l}</button>`).join('')}</div></div>
+<div class="card"><b>Choose your adventure</b><div class="grid">${WORLDS.map((w,k)=>`<button onclick="play(${k})">${w.e} ${w.n}<br><small>${w.t}</small></button>`).join('')}</div></div>
+<div class="grid"><button onclick="board('leaderboard')">🏆 Leaderboard</button><button onclick="board('report')">📋 Teacher report</button><button onclick="mute=!mute;map()">${mute?'🔇 Sound off':'🔊 Sound on'}</button><button onclick="home()">🔄 Change codename</button></div>`}
+function play(k){W=k;document.body.className='w'+(k+1);Q=[];for(let j=0;j<10;j++)Q.push(WORLDS[k].g(L));i=sc=st=0;tone(440);ask()}
+function ask(){const q=Q[i];app.innerHTML=`<div class="bar"><i style="width:${i*10}%"></i></div><div class="mascot">${WORLDS[W].e}</div><div class="card"><div>Question ${i+1} of 10 · Score ${sc} · Streak ${st} 🔥</div><div class="big">${q.q} = ?</div><div class="grid">${q.o.map(o=>`<button data-v="${o}" onclick="ans(this)">${o}</button>`).join('')}</div></div>`}
+function ans(b){const bs=[...document.querySelectorAll('.grid button')];bs.forEach(x=>x.disabled=true);const q=Q[i];
+ if(b.dataset.v==q.a){b.classList.add('ok');sc++;st++;yay()}else{b.classList.add('no');st=0;tone(180,.3);bs.find(x=>x.dataset.v==q.a).classList.add('ok')}
+ setTimeout(()=>++i<10?ask():done(),1100)}
+function done(){const s=sc>=9?3:sc>=7?2:sc>=5?1:0;yay();
+ if(API.startsWith('http'))fetch(API,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify({me,world:WORLDS[W].n,level:LV[L].slice(2),score:sc,total:10,stars:s})}).catch(()=>{});
+ app.innerHTML=`<div class="mascot">${s?'🏅':'💪'}</div><h1>${sc} / 10</h1><div class="card"><div class="big">${'⭐'.repeat(s)||'Keep going!'}</div><p style="text-align:center">${s==3?'Legendary, '+me+'!':s?'Great adventure, '+me+'!':'Every explorer learns. Try again!'}</p><div class="grid"><button onclick="play(W)">Play again</button><button onclick="map()">Back to map</button><button onclick="board('leaderboard')">🏆 Leaderboard</button></div></div>`}
+function board(t){document.body.className='';app.innerHTML=`<h1>${t=='report'?'Teacher report':'Leaderboard'}</h1><div class="card" id="bd">Loading…</div><button onclick="map()">Back to map</button>`;
+ if(!API.startsWith('http')){$('#bd').textContent='Connect the Apps Script URL in index.html to see scores.';return}
+ fetch(API+'?action='+t).then(r=>r.json()).then(d=>{$('#bd').innerHTML=!d.length?'No scores yet. Be the first!':t=='report'?`<table><tr><th>Codename</th><th>World</th><th>Level</th><th>Plays</th><th>Best</th><th>Avg</th></tr>${d.map(r=>`<tr><td>${r.me}</td><td>${r.world}</td><td>${r.level}</td><td>${r.plays}</td><td>${r.best}</td><td>${r.avg}</td></tr>`).join('')}</table>`:`<table>${d.map((r,k)=>`<tr><td>${['🥇','🥈','🥉'][k]||k+1}</td><td>${r.me}</td><td>${r.pts} pts</td></tr>`).join('')}</table>`}).catch(()=>{$('#bd').textContent='Could not load scores. Check your internet and try again.'})}
+me?map():home();
+</script></body></html>
